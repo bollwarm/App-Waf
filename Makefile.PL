@@ -13,6 +13,7 @@ WriteMakefile(
     MIN_PERL_VERSION => 5.006,
     CONFIGURE_REQUIRES => {
         'ExtUtils::MakeMaker' => 0,
+        'File::ReadBackwards' => 0,
     },
     BUILD_REQUIRES => {
         'Test::More' => 0,
