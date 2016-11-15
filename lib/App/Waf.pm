@@ -3,7 +3,7 @@ package App::Waf;
 use 5.006;
 use strict;
 use warnings;
-
+require Exporter;
 =head1 NAME
 
 App::Waf - The great new App::Waf!
@@ -15,6 +15,9 @@ Version 0.01
 =cut
 
 our $VERSION = '0.01';
+
+our @ISA    = qw(Exporter);
+our @EXPORT = qw(tail initCount);
 
 =head1 SYNOPSIS
 
@@ -55,6 +58,7 @@ my @validurl = split /\s+/, $validurl;
 sub tail {
 
 my ($filename,$linenum)=@_;
+print "DEBUG :: tail() :: IN : $filename,$linenum \n";
 my $bw = File::ReadBackwards->new($filename)
   or die "can't read $filename $!";
 
@@ -71,16 +75,17 @@ while ( defined( my $line = $bw->readline ) ) {
 return \@lines;
 }
 
-sub intit {
+sub initCount {
 
-my ($re,$line)=@_;
-for (@{$re}) {
+my $line=shift;
+my @re=@validurl;
+for (@re) {
     my $result = scarlog1( $_,$line);
     my ( $mycount, $mylog ) = count($result);
     my $key = $_;
-    print "The count $_ is $mycount->{$_}->[0] \n";
-    print "$mylog->{$_}";
-    print "IP count:\n";
+    print "The count $_ is $mycount->{$_}->[0] \n" if $mycount->{$_}->[0];
+    print "$mylog->{$_}" if $mylog->{$_};
+    print "IP count:\n" if $mycount->{$_}->[0];
     for ( sort keys %{ $mycount->{$key}->[1] } ) {
         print "$_ : $mycount->{$key}->[1]->{$_} \n";
 
