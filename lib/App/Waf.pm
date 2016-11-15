@@ -36,24 +36,6 @@ if you don't export anything, such as for a purely object-oriented module.
 =cut
 
 use File::ReadBackwards;
-my $dirctor = shift;
-
-#usage tailfilebackwards filename numlines
-my $filename = "/web/logs/access.log";
-my $numlines = 100000;
-
-$bw = File::ReadBackwards->new($filename)
-  or die "can't read $filename $!";
-
-my $count = 0;
-my @lines;
-
-while ( defined( $line = $bw->readline ) ) {
-    push @lines, $line;
-    $count++;
-    if ( $count == $numlines ) { last }
-}
-@lines = reverse @lines;
 
 my $validurl =
 q#rfd.php\?include_file  \.\./  select.+(from|limit)  (?:(union(.*?)select))  having|rongjitest  sleep\((\s*)(\d*)(\s*)\)
@@ -70,31 +52,30 @@ q#rfd.php\?include_file  \.\./  select.+(from|limit)  (?:(union(.*?)select))  ha
 
 my @validurl = split /\s+/, $validurl;
 
-my $start = time;
+sub tail {
 
-for (@validurl) {
+my ($filename,$linenum)=@_;
+my $bw = File::ReadBackwards->new($filename)
+  or die "can't read $filename $!";
 
-    #http://www.freebuf.com/sectool/110644.html
-    chomp;
-    scarlog($_) if $dirctor;
+my $count = 0;
+my @lines;
 
-}
-my $duration = time - $start;
-print "while loop Execution time: $duration s\n";
-
-sub scarlog {
-
-    my $re = shift;
-    print "$re:\n";
-
-    for (@lines) {
-        print if /$re/;
-    }
+while ( defined( my $line = $bw->readline ) ) {
+    push @lines, $line;
+    $count++;
+    if ( $count == $linenum ) { last }
 }
 
-my $start = time;
-for (@validurl) {
-    my $result = scarlog1( $_, \@lines ) unless $dirctor;
+@lines = reverse @lines;
+return \@lines;
+}
+
+sub intit {
+
+my ($re,$line)=@_;
+for (@{$re}) {
+    my $result = scarlog1( $_,$line);
     my ( $mycount, $mylog ) = count($result);
     my $key = $_;
     print "The count $_ is $mycount->{$_}->[0] \n";
@@ -106,16 +87,15 @@ for (@validurl) {
     }
 
 }
-my $duration = time - $start;
-
+}
 sub count {
 
     my $result = shift;
 
-    my $mcount, %rawlog;
+    my ($mcount, %rawlog);
     my $count = 0;
     for ( keys %{$result} ) {
-        my %ip, %result, %status, %siteurl;
+        my (%ip, %requrl, %status, %siteurl);
 
         next if $result->{$_} eq "";
         $rawlog{$_} .= $result->{$_};
@@ -135,7 +115,6 @@ sub count {
     return $mcount, \%rawlog;
 }
 
-print "while loop Execution time: $duration s\n";
 
 sub scarlog1 {
 
@@ -143,7 +122,7 @@ sub scarlog1 {
 
     my %result;
 
-    $code = 'for(@{$lines}) {';
+    my $code = 'for(@{$lines}) {';
     $code .= 'if (m#';
     $code .= qr($patter);
     $code .= '#) {$result{' . q($patter) . '}.=$_}}';
@@ -154,7 +133,7 @@ sub scarlog1 {
 
     #print "DEBUG scarlog1 :: OUT :: $_: $result{$_}\n" for(keys %result);
     return \%result;
-
+}
 =head1 AUTHOR
 
 ORANGE, C<< <bollwarm at ijz.me> >>
@@ -208,4 +187,4 @@ Copyright 2016 ORANGE.
 
 =cut
 
-    1;    # End of App::Waf
+1;    # End of App::Waf
