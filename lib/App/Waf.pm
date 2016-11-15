@@ -21,14 +21,9 @@ our @EXPORT = qw(tail initCount);
 
 =head1 SYNOPSIS
 
-Quick summary of what the module does.
 
 Perhaps a little code snippet.
 
-    use App::Waf;
-
-    my $foo = App::Waf->new();
-    ...
 
 =head1 EXPORT
 
@@ -39,7 +34,7 @@ if you don't export anything, such as for a purely object-oriented module.
 =cut
 
 use File::ReadBackwards;
-
+my $DEBUG=0;
 my $validurl =
 q#rfd.php\?include_file  \.\./  select.+(from|limit)  (?:(union(.*?)select))  having|rongjitest  sleep\((\s*)(\d*)(\s*)\)
             benchmark\((.*)\,(.*)\)  base64_decode\( (?:from\W+information_schema\W)
@@ -58,7 +53,7 @@ my @validurl = split /\s+/, $validurl;
 sub tail {
 
 my ($filename,$linenum)=@_;
-print "DEBUG :: tail() :: IN : $filename,$linenum \n";
+print "DEBUG :: tail() :: IN : $filename,$linenum \n" if $DEBUG;
 my $bw = File::ReadBackwards->new($filename)
   or die "can't read $filename $!";
 
@@ -79,20 +74,32 @@ sub initCount {
 
 my $line=shift;
 my @re=@validurl;
+my $kcount=shift;
+my ($zcount,$zip,$zrequrl,$zstatus,$siteurl);
+my $rawlog;
+
 for (@re) {
     my $result = scarlog1( $_,$line);
     my ( $mycount, $mylog ) = count($result);
     my $key = $_;
-    print "The count $_ is $mycount->{$_}->[0] \n" if $mycount->{$_}->[0];
-    print "$mylog->{$_}" if $mylog->{$_};
-    print "IP count:\n" if $mycount->{$_}->[0];
-    for ( sort keys %{ $mycount->{$key}->[1] } ) {
-        print "$_ : $mycount->{$key}->[1]->{$_} \n";
+       $rawlog.=$mylog->{$key} if $mylog->{$key};
+        
+        $zcount+= $mycount->{$key}->[0] if $mycount->{$key}->[0];
+        print "DEBUG\:: initCount()\::OUT  $key $mycount->{$key}->[0]   $zcount \n" if $DEBUG;
+        $zip->{$_}+=$mycount->{$key}->[1]->{$_}  for ( keys %{ $mycount->{$key}->[1] } );
+        $zrequrl->{$_}+=$mycount->{$key}->[2]->{$_}  for (keys %{ $mycount->{$key}->[2] } );
+        if ($DEBUG) {
+        print "DEBUG\:: initCount()\::OUT  $key $zrequrl->{$_}  $_\=> $mycount->{$key}->[2]->{$_} \n" for (keys %{ $mycount->{$key}->[2] } ) ;}
+        $zstatus->{$_}+=$mycount->{$key}->[3]->{$_}   for (keys %{ $mycount->{$key}->[3] } );
+        $siteurl->{$_}+=$mycount->{$key}->[4]->{$_}  for (keys %{ $mycount->{$key}->[4] } );
 
     }
+ if ($DEBUG) {
+print  "DEBUG\:: initCount()\::OUT\::\$zrequrl  $_\=>$zrequrl->{$_}\n"  for(keys %{$zrequrl})  ;
+  }
+return ($rawlog,$zcount,$zip,$zrequrl,$zstatus,$siteurl);
+}
 
-}
-}
 sub count {
 
     my $result = shift;
@@ -105,14 +112,17 @@ sub count {
         next if $result->{$_} eq "";
         $rawlog{$_} .= $result->{$_};
         my @seclogs = split /\n/ms, $result->{$_};
-        $count++;
         for (@seclogs) {
+           $count++;
+            print "DEBUG\:: count()\::IN $_\n" if $DEBUG;
             my ( $ip, $requrl, $status, $siteurl ) = (split)[ 0, 6, 8, 10 ];
-            $ip{$ip}++;
-            $requrl{$requrl}++;
-            $status{$status}++;
-            $siteurl{$siteurl}++;
+            $ip{$ip}++ if $ip;
+            $requrl{$requrl}++ if $requrl;
+            $status{$status}++ if $status;
+            $siteurl{$siteurl}++ if $siteurl;
+           print "DEBUG\:: count()\::OUT $ip\=>$ip{$ip} $requrl\=>$requrl{$requrl} $status\=>$status{$status} $siteurl\=>$siteurl{$siteurl} \n" if $DEBUG;
         }
+
         $mcount->{$_} = [ $count, \%ip, \%requrl, \%status, \%siteurl ];
 
     }

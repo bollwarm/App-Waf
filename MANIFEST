@@ -1,4 +1,6 @@
 Changes
+example/example.acess
+example/logsecm.pl
 ignore.txt
 lib/App/Waf.pm
 Makefile.PL
