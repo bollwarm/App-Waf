@@ -53,7 +53,7 @@ print "$_\=> $siteurl->{$_} \n" for(sort keys %{$siteurl});
 
 use File::ReadBackwards;
 
-my $DEBUG=0;
+my $DEBUG = 0;
 my $validurl =
 q#rfd.php\?include_file  \.\./  select.+(from|limit)  (?:(union(.*?)select))  having|rongjitest  sleep\((\s*)(\d*)(\s*)\)
             benchmark\((.*)\,(.*)\)  base64_decode\( (?:from\W+information_schema\W)
@@ -71,75 +71,88 @@ my @validurl = split /\s+/, $validurl;
 
 sub tail {
 
-my ($filename,$linenum)=@_;
-print "DEBUG :: tail() :: IN : $filename,$linenum \n" if $DEBUG;
-my $bw = File::ReadBackwards->new($filename)
-  or die "can't read $filename $!";
+    my ( $filename, $linenum ) = @_;
+    print "DEBUG :: tail() :: IN : $filename,$linenum \n" if $DEBUG;
+    my $bw = File::ReadBackwards->new($filename)
+      or die "can't read $filename $!";
 
-my $count = 0;
-my @lines;
+    my $count = 0;
+    my @lines;
 
-while ( defined( my $line = $bw->readline ) ) {
-    push @lines, $line;
-    $count++;
-    if ( $count == $linenum ) { last }
-}
+    while ( defined( my $line = $bw->readline ) ) {
+        push @lines, $line;
+        $count++;
+        if ( $count == $linenum ) { last }
+    }
 
-@lines = reverse @lines;
-return \@lines;
+    @lines = reverse @lines;
+    return \@lines;
 }
 
 sub initCount {
 
-my $line=shift;
-my @re=@validurl;
-my $kcount=shift;
-my ($zcount,$zip,$zrequrl,$zstatus,$siteurl);
-my $rawlog;
+    my $line   = shift;
+    my @re     = @validurl;
+    my $kcount = shift;
+    my ( $zcount, $zip, $zrequrl, $zstatus, $siteurl );
+    my $rawlog;
 
-for (@re) {
-    my $result = scarlog1( $_,$line);
-    my ( $mycount, $mylog ) = count($result);
-    my $key = $_;
-       $rawlog.=$mylog->{$key} if $mylog->{$key};
-        
-        $zcount+= $mycount->{$key}->[0] if $mycount->{$key}->[0];
-        print "DEBUG\:: initCount()\::OUT  $key $mycount->{$key}->[0]   $zcount \n" if $DEBUG;
-        $zip->{$_}+=$mycount->{$key}->[1]->{$_}  for ( keys %{ $mycount->{$key}->[1] } );
-        $zrequrl->{$_}+=$mycount->{$key}->[2]->{$_}  for (keys %{ $mycount->{$key}->[2] } );
+    for (@re) {
+        my $result = scarlog1( $_, $line );
+        my ( $mycount, $mylog ) = count($result);
+        my $key = $_;
+        $rawlog .= $mylog->{$key} if $mylog->{$key};
+
+        $zcount += $mycount->{$key}->[0] if $mycount->{$key}->[0];
+        print
+          "DEBUG\:: initCount()\::OUT  $key $mycount->{$key}->[0]   $zcount \n"
+          if $DEBUG;
+        $zip->{$_} += $mycount->{$key}->[1]->{$_}
+          for ( keys %{ $mycount->{$key}->[1] } );
+        $zrequrl->{$_} += $mycount->{$key}->[2]->{$_}
+          for ( keys %{ $mycount->{$key}->[2] } );
+
         if ($DEBUG) {
-        print "DEBUG\:: initCount()\::OUT  $key $zrequrl->{$_}  $_\=> $mycount->{$key}->[2]->{$_} \n" for (keys %{ $mycount->{$key}->[2] } ) ;}
-        $zstatus->{$_}+=$mycount->{$key}->[3]->{$_}   for (keys %{ $mycount->{$key}->[3] } );
-        $siteurl->{$_}+=$mycount->{$key}->[4]->{$_}  for (keys %{ $mycount->{$key}->[4] } );
+            print
+"DEBUG\:: initCount()\::OUT  $key $zrequrl->{$_}  $_\=> $mycount->{$key}->[2]->{$_} \n"
+              for ( keys %{ $mycount->{$key}->[2] } );
+        }
+        $zstatus->{$_} += $mycount->{$key}->[3]->{$_}
+          for ( keys %{ $mycount->{$key}->[3] } );
+        $siteurl->{$_} += $mycount->{$key}->[4]->{$_}
+          for ( keys %{ $mycount->{$key}->[4] } );
 
     }
- if ($DEBUG) {
-print  "DEBUG\:: initCount()\::OUT\::\$zrequrl  $_\=>$zrequrl->{$_}\n"  for(keys %{$zrequrl})  ;
-  }
-return ($rawlog,$zcount,$zip,$zrequrl,$zstatus,$siteurl);
+    if ($DEBUG) {
+        print "DEBUG\:: initCount()\::OUT\::\$zrequrl  $_\=>$zrequrl->{$_}\n"
+          for ( keys %{$zrequrl} );
+    }
+    return ( $rawlog, $zcount, $zip, $zrequrl, $zstatus, $siteurl );
 }
 
 sub count {
 
     my $result = shift;
 
-    my ($mcount, %rawlog);
+    my ( $mcount, %rawlog );
     my $count = 0;
     for ( keys %{$result} ) {
-        my (%ip, %requrl, %status, %siteurl);
+        my ( %ip, %requrl, %status, %siteurl );
 
         next if $result->{$_} eq "";
         $rawlog{$_} .= $result->{$_};
         my @seclogs = split /\n/ms, $result->{$_};
         for (@seclogs) {
-           $count++;
+            $count++;
             print "DEBUG\:: count()\::IN $_\n" if $DEBUG;
             my ( $ip, $requrl, $status, $siteurl ) = (split)[ 0, 6, 8, 10 ];
-            $ip{$ip}++ if $ip;
-            $requrl{$requrl}++ if $requrl;
-            $status{$status}++ if $status;
+            $ip{$ip}++           if $ip;
+            $requrl{$requrl}++   if $requrl;
+            $status{$status}++   if $status;
             $siteurl{$siteurl}++ if $siteurl;
-           print "DEBUG\:: count()\::OUT $ip\=>$ip{$ip} $requrl\=>$requrl{$requrl} $status\=>$status{$status} $siteurl\=>$siteurl{$siteurl} \n" if $DEBUG;
+            print
+"DEBUG\:: count()\::OUT $ip\=>$ip{$ip} $requrl\=>$requrl{$requrl} $status\=>$status{$status} $siteurl\=>$siteurl{$siteurl} \n"
+              if $DEBUG;
         }
 
         $mcount->{$_} = [ $count, \%ip, \%requrl, \%status, \%siteurl ];
@@ -148,7 +161,6 @@ sub count {
 
     return $mcount, \%rawlog;
 }
-
 
 sub scarlog1 {
 
@@ -168,6 +180,7 @@ sub scarlog1 {
     #print "DEBUG scarlog1 :: OUT :: $_: $result{$_}\n" for(keys %result);
     return \%result;
 }
+
 =head1 AUTHOR
 
 ORANGE, C<< <bollwarm at ijz.me> >>
@@ -177,6 +190,8 @@ ORANGE, C<< <bollwarm at ijz.me> >>
 Please report any bugs or feature requests to C<bug-app-waf at rt.cpan.org>, or through
 the web interface at L<http://rt.cpan.org/NoAuth/ReportBug.html?Queue=App-Waf>.  I will be notified, and then you'll
 automatically be notified of progress on your bug as I make changes.
+
+
 
 
 =head1 SUPPORT
@@ -216,8 +231,6 @@ L<http://search.cpan.org/dist/App-Waf/>
 
 Copyright 2016 ORANGE.
 
-This is free software; you can redistribute it and/or modify
-it under the same terms as the Perl 5 programming language system itself.
 
 =cut
 

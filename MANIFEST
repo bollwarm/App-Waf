@@ -3,6 +3,7 @@ example/example.acess
 example/logsecm.pl
 ignore.txt
 lib/App/Waf.pm
+lib/App/Waf.pm.tdy
 Makefile.PL
 MANIFEST			This list of files
 README
