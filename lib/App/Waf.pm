@@ -65,7 +65,7 @@ q#rfd.php\?include_file  \.\./  select.+(from|limit)  (?:(union(.*?)select))  ha
             .(bak|inc|old|mdb|sql|backup|java|class)$  \.(svn|htaccess|bash_history)
             (vhost|bbs|host|wwwroot|www|site|root|hytop|flashfxp).*\.rar
             (phpmyadmin|jmx-console|jmxinvokerservlet)  java\.lang
-            /(attachments|upimg|images|css|uploadfiles|html|uploads|templets|static|template|data|inc|forumdata|upload|includes|cache|avatar)/(\w+).(php|jsp)#;
+            /(attachments|upimg|images|css|uploadfiles|html|uploads|templets|static|template|data|inc|forumdata|upload|includes|cache|avatar|xmlrpc)/(\w+).(php|jsp)#;
 
 my @validurl = split /\s+/, $validurl;
 
