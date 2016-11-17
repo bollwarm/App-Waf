@@ -22,6 +22,12 @@
     print "\n\nThe count From Site Url:  \n\n";
     print "$_\=> $siteurl->{$_} \n" for(sort keys %{$siteurl});
 
+## 结合nginx 和 iptables 进行实时banip的实例（example/banip.pl）
+   
+加入crontab 每5分钟执行一次。
+
+   echo "*/5 * * * * perl $dir/banip.pl >> bianip.logs 2>&1 " >> /var/spool/cron/root
+
 ## 结果展示
 
 ==============Attack Summary ==================

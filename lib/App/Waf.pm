@@ -17,11 +17,11 @@ this infomations for ban whith iptables.
 
 =head1 VERSION
 
-Version 0.02
+Version 0.03
 
 =cut
 
-our $VERSION = '0.02';
+our $VERSION = '0.03';
 
 our @ISA    = qw(Exporter);
 our @EXPORT = qw(tail initCount);
@@ -32,23 +32,31 @@ Perhaps a little code snippet.
 
 =head1 EXPORT
 
-use App::Waf;
-my $filename = "example.acess";#日志文件
-my $numlines  = 50000; #要处理的行数,从后读。
-my $line=tail($filename,$$numlines);
- ($log,$zcount,$zip,$zrequrl,$zstatus,$siteurl)=initCount($line);
-print "==============Attack Summary ==================\n";
-print "\nThe total attack count: $zcount \n";
-print "\nThe count from source IP:  \n\n";
-print "$_\=> $zip->{$_} \n" for(sort  keys %{$zip});
-print "The count From request Url:  \n\n";
-print "$_\=> $zrequrl->{$_} \n" for(sort keys %{$zrequrl});
-print "\n\nThe count From Http Status:  \n\n";
-print "$_\=> $zstatus->{$_} \n" for(sort keys %{$zstatus});
-print "\n\nThe count From Site Url:  \n\n";
-print "$_\=> $siteurl->{$_} \n" for(sort keys %{$siteurl});
+=head2 实例
 
+  use App::Waf;
+  my $filename = "example.acess";#日志文件
+  my $numlines  = 50000; #要处理的行数,从后读。
+  my $line=tail($filename,$$numlines);
+   ($log,$zcount,$zip,$zrequrl,$zstatus,$siteurl)=initCount($line);
+  print "==============Attack Summary ==================\n";
+  print "\nThe total attack count: $zcount \n";
+  print "\nThe count from source IP:  \n\n";
+  print "$_\=> $zip->{$_} \n" for(sort  keys %{$zip});
+  print "The count From request Url:  \n\n";
+  print "$_\=> $zrequrl->{$_} \n" for(sort keys %{$zrequrl});
+  print "\n\nThe count From Http Status:  \n\n";
+  print "$_\=> $zstatus->{$_} \n" for(sort keys %{$zstatus});
+  print "\n\nThe count From Site Url:  \n\n";
+  print "$_\=> $siteurl->{$_} \n" for(sort keys %{$siteurl});
+  
+=head2 结合nginx 和 iptables 进行实时banip的实例（example/banip.pl）
+
+加入crontab 每5分钟执行一次。
+
+   echo "*/5 * * * * perl $dir/banip.pl >> bianip.logs 2>&1 " >> /var/spool/cron/ro
 =head1 SUBROUTINES/METHODS
+
 =cut
 
 use File::ReadBackwards;
