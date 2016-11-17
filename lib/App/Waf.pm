@@ -54,20 +54,37 @@ print "$_\=> $siteurl->{$_} \n" for(sort keys %{$siteurl});
 use File::ReadBackwards;
 
 my $DEBUG=0;
-my $validurl =
-q#rfd.php\?include_file  \.\./  select.+(from|limit)  (?:(union(.*?)select))  having|rongjitest  sleep\((\s*)(\d*)(\s*)\)
-            benchmark\((.*)\,(.*)\)  base64_decode\( (?:from\W+information_schema\W)
-            (?:(?:current_)user|database|schema|connection_id)\s*\(  (?:etc\/\W*passwd)
-            into(\s+)+(?:dump|out)file\s*  group\s+by.+\(  xwork.MethodAccessor
-            (?:define|eval|file_get_contents|include|require|require_once|shell_exec|phpinfo|system|passthru|preg_\w+|execute|echo|print|print_r|var_dump|(fp)open|concat|alert|showmodaldialog)\( xwork\.MethodAccessor  (gopher|doc|php|glob|file|phar|zlib|ftp|ldap|dict|ogg|data)\:\/
-            java\.lang  \$_(GET|post|cookie|files|session|env|phplib|GLOBALS|SERVER)\[
-            \<(iframe|script|body|img|layer|div|meta|style|base|object|input)  (onmouseover|onerror|onload)\=
-            .(bak|inc|old|mdb|sql|backup|java|class)$  \.(svn|htaccess|bash_history)
-            (vhost|bbs|host|wwwroot|www|site|root|hytop|flashfxp).*\.rar
-            (phpmyadmin|jmx-console|jmxinvokerservlet)  java\.lang
-            /(attachments|upimg|images|css|uploadfiles|html|uploads|templets|static|template|data|inc|forumdata|upload|includes|cache|avatar|xmlrpc)/(\w+).(php|jsp)#;
 
-my @validurl = split /\s+/, $validurl;
+my @validurl =(
+'rfd.php\?include_file',
+'\.\./',
+'select.+(from|limit)',
+'(?:(union(.*?)select))',
+'having|rongjitest',
+'sleep\((\s*)(\d*)(\s*)\)',
+'benchmark\((.*)\,(.*)\)',
+'base64_decode\(',
+'(?:from\W+information_schema\W)',
+'(?:(?:current_)user|database|schema|connection_id)\s*\(',
+'(?:etc\/\W*passwd)',
+'into(\s+)+(?:dump|out)file\s*',
+'group\s+by.+\(',
+'xwork.MethodAccessor',
+'(?:define|eval|file_get_contents|include|require|require_once|shell_exec|phpinfo|system|passthru|preg_\w+|execute|echo|print|print_r|var_dump|(fp)open|concat|alert|showmodaldialog)\(',
+'xwork\.MethodAccessor',
+'(gopher|doc|php|glob|file|phar|zlib|ftp|ldap|dict|ogg|data)\:\/',
+'java\.lang',
+'\$_(GET|post|cookie|files|session|env|phplib|GLOBALS|SERVER)\[',
+'\<(iframe|script|body|img|layer|div|meta|style|base|object|input)',
+'(onmouseover|onerror|onload)\=',
+'\.(bak|inc|old|mdb|sql|backup|java|class)$',
+'\.(svn|htaccess|bash_history)',
+'(vhost|bbs|host|wwwroot|www|site|root|hytop|flashfxp).*\.rar',
+'(phpmyadmin|jmx-console|jmxinvokerservlet)',
+'/xmlrpc.php',
+'/(attachments|upimg|images|css|uploadfiles|html|uploads|templets|static|template|data|inc|forumdata|upload|includes|cache|avatar)/(\w+).(php|jsp|asp)',
+
+);
 
 sub tail {
 
