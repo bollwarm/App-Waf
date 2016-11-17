@@ -5,8 +5,8 @@ use App::Waf;
 # 设置日志文件和需要解析的文件大小，一般是web日志，$threshold为封禁的阈值
 # 可以根据实际情况调节大小
 
-my $filename = "example.acess";
-my $numlines = 5000;
+my $filename  = "example.acess";
+my $numlines  = 5000;
 my $threshold = 200;
 
 =pod
@@ -20,61 +20,62 @@ my $threshold = 200;
 
 =cut
 
-my $nginx_home="/usr/local/nginx";
-my $ngixBanfile=$nginx_home.'/conf/conf.d/blockip.conf';
-my $ngixPidfile= $nginx_home.'/logs/nginx.pid' ;
+my $nginx_home  = "/usr/local/nginx";
+my $ngixBanfile = $nginx_home . '/conf/conf.d/blockip.conf';
+my $ngixPidfile = $nginx_home . '/logs/nginx.pid';
 
-my $line=tail($filename,$numlines);
+my $line = tail( $filename, $numlines );
 
- ($log,$zcount,$zip,$zrequrl,$zstatus,$siteurl)=initCount($line);
+( $log, $zcount, $zip, $zrequrl, $zstatus, $siteurl ) = initCount($line);
 
-for(sort { $zip->{$b}<=>$zip->{$a}} keys %{$zip}){
+for ( sort { $zip->{$b} <=> $zip->{$a} } keys %{$zip} ) {
 
-print "$_ : $zip->{$_} \n" if $zip->{$_} >$threshold;
-#nginxBan($_,$ngixBanfile,$ngixPidfile) if $zip->{$_} >$threshold;
-iptabBan($_,$ngixBanfile,$ngixPidfile) if $zip->{$_} >$threshold;
+    print "$_ : $zip->{$_} \n" if $zip->{$_} > $threshold;
+
+    #nginxBan($_,$ngixBanfile,$ngixPidfile) if $zip->{$_} >$threshold;
+    iptabBan( $_, $ngixBanfile, $ngixPidfile ) if $zip->{$_} > $threshold;
 
 }
-
 
 sub nginxBan {
 
-my $btime=localtime(time());
-my ($ip,$conf,$pid)=@_;
-my $bid=0;
-open my $nFD,"<",$conf or die("Can not open the file!$!\n") ;
-while (<$nFD>) {
-   print "DEBUG ::nginxBan :: $conf IN $_" if $DEBUG;
-   $bid=1 if /$ip/;
-}
-close $nFD;
+    my $btime = localtime( time() );
+    my ( $ip, $conf, $pid ) = @_;
+    my $bid = 0;
+    open my $nFD, "<", $conf or die("Can not open the file!$!\n");
+    while (<$nFD>) {
+        print "DEBUG ::nginxBan :: $conf IN $_" if $DEBUG;
+        $bid = 1 if /$ip/;
+    }
+    close $nFD;
 
-open my $nFD,">>",$banfile or die("Can not open the file!$!\n") ;
+    open my $nFD, ">>", $banfile or die("Can not open the file!$!\n");
 
-unless ($bid) {
-   print  "$btime,banip $ip\n";
-   print $nFD  "deny $ip\;\n";
+    unless ($bid) {
+        print "$btime,banip $ip\n";
+        print $nFD "deny $ip\;\n";
+    }
+
+    close $nFD;
+    my $restartNginx = `/bin/kill -HUP $pid`;
+    print $restartNginx, "\n";
+
+    #print  "/bin/kill -HUP $nginx_home/logs/nginx.pid \n";
 }
 
-close $nFD;
-my $restartNginx=`/bin/kill -HUP $pid`;
-print $restartNginx,"\n";
-#print  "/bin/kill -HUP $nginx_home/logs/nginx.pid \n";
-}
-sub iptabBan  {
+sub iptabBan {
 
 # must be root user;
 # 必须root用户才可以操作iptables，当然也必须有iptables服务跑动着
 
-my $IP=shift;
+    my $IP = shift;
 
-$ips= `iptables-save`;
-$mo= qr(/INPUT/ and /DROP/ and /$IP/);
-unless ($ips=~$mo)
-{
-`iptables -I INPUT -s $IP -j DROP`;
-my $btime=localtime(time());
-print "$btime :band $IP \n"; 
-}
+    $ips = `iptables-save`;
+    $mo  = qr(/INPUT/ and /DROP/ and /$IP/);
+    unless ( $ips =~ $mo ) {
+        `iptables -I INPUT -s $IP -j DROP`;
+        my $btime = localtime( time() );
+        print "$btime :band $IP \n";
+    }
 
 }

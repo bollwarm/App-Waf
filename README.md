@@ -26,7 +26,7 @@
    
 加入crontab 每5分钟执行一次。
 
-   echo "*/5 * * * * perl $dir/banip.pl >> bianip.logs 2>&1 " >> /var/spool/cron/root
+    echo "*/5 * * * * perl $dir/banip.pl >> bianip.logs 2>&1 " >> /var/spool/cron/root
 
 ## 结果展示
 
