@@ -6,8 +6,8 @@ use App::Waf;
 # 可以根据实际情况调节大小
 
 my $filename  = "/web/logs/access.log";
-my $numlines  = 300000;
-my $threshold = 1000;
+my $numlines  = 10000;
+my $threshold = 200;
 
 =pod
 ## 结合nginx 和 iptables 进行实时banip的实例（example/banip.pl）
@@ -21,7 +21,7 @@ my $threshold = 1000;
 =cut
 
 my $nginx_home  = "/usr/local/nginx";
-my $ngixBanfile = $nginx_home . '/conf/vhosts/blockip.conf';
+my $ngixBanfile = $nginx_home . '/conf/conf.d/blockip.conf';
 my $ngixPidfile = $nginx_home . '/logs/nginx.pid';
 
 my $line = tail( $filename, $numlines );
