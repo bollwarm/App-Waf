@@ -5,9 +5,9 @@ use App::Waf;
 # 设置日志文件和需要解析的文件大小，一般是web日志，$threshold为封禁的阈值
 # 可以根据实际情况调节大小
 
-my $filename  = "example.acess";
-my $numlines  = 5000;
-my $threshold = 200;
+my $filename  = "/web/logs/access.log";
+my $numlines  = 300000;
+my $threshold = 1000;
 
 =pod
 ## 结合nginx 和 iptables 进行实时banip的实例（example/banip.pl）
@@ -21,10 +21,11 @@ my $threshold = 200;
 =cut
 
 my $nginx_home  = "/usr/local/nginx";
-my $ngixBanfile = $nginx_home . '/conf/conf.d/blockip.conf';
+my $ngixBanfile = $nginx_home . '/conf/vhosts/blockip.conf';
 my $ngixPidfile = $nginx_home . '/logs/nginx.pid';
 
 my $line = tail( $filename, $numlines );
+
 
 ( $log, $zcount, $zip, $zrequrl, $zstatus, $siteurl ) = initCount($line);
 
@@ -32,11 +33,10 @@ for ( sort { $zip->{$b} <=> $zip->{$a} } keys %{$zip} ) {
 
     print "$_ : $zip->{$_} \n" if $zip->{$_} > $threshold;
 
-    #nginxBan($_,$ngixBanfile,$ngixPidfile) if $zip->{$_} >$threshold;
-    iptabBan( $_, $ngixBanfile, $ngixPidfile ) if $zip->{$_} > $threshold;
+    nginxBan($_,$ngixBanfile,$ngixPidfile) if $zip->{$_} >$threshold;
+    #iptabBan( $_, $ngixBanfile, $ngixPidfile ) if $zip->{$_} > $threshold;
 
 }
-
 sub nginxBan {
 
     my $btime = localtime( time() );
@@ -49,16 +49,17 @@ sub nginxBan {
     }
     close $nFD;
 
-    open my $nFD, ">>", $banfile or die("Can not open the file!$!\n");
+    open my $nFD, ">>", $conf or die("Can not open 1 the file!$!\n");
 
     unless ($bid) {
         print "$btime,banip $ip\n";
         print $nFD "deny $ip\;\n";
+        $pid=`cat $pid`;
+        chomp $pid;
+         `/usr/bin/kill -HUP $pid`;
     }
 
     close $nFD;
-    my $restartNginx = `/bin/kill -HUP $pid`;
-    print $restartNginx, "\n";
 
     #print  "/bin/kill -HUP $nginx_home/logs/nginx.pid \n";
 }
@@ -69,13 +70,23 @@ sub iptabBan {
 # 必须root用户才可以操作iptables，当然也必须有iptables服务跑动着
 
     my $IP = shift;
+    
+    my $ips = `iptables-save`;
+    my @ipsline=split /\n/sm,$ips;
+    my $dist=0;
+    for(@ipsline){
+        
+      $dist=1 if (/$IP/ and /INPUT/ and /DROP/);
 
-    $ips = `iptables-save`;
-    $mo  = qr(/INPUT/ and /DROP/ and /$IP/);
-    unless ( $ips =~ $mo ) {
+     }
+    unless ($dist) {
         `iptables -I INPUT -s $IP -j DROP`;
         my $btime = localtime( time() );
         print "$btime :band $IP \n";
+    } else {
+   
+     print "band alread!\n";
+
     }
 
 }
