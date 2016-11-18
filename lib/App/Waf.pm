@@ -54,7 +54,8 @@ Perhaps a little code snippet.
 
 加入crontab 每5分钟执行一次。
 
-   echo "*/5 * * * * perl $dir/banip.pl >> bianip.logs 2>&1 " >> /var/spool/cron/ro
+   echo "*/5 * * * * perl $dir/banip.pl >> bianip.logs 2>&1 " >> /var/spool/cron/root
+
 =head1 SUBROUTINES/METHODS
 
 =cut

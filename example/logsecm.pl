@@ -1,9 +1,9 @@
 use App::Waf;
 
 my $filename = "example.acess";
-my $numlines = 500000;
+my $numlines = shift;
 
-my $line = tail( $filename, 50000 );
+my $line = tail( $filename, $numlines );
 
 ( $log, $zcount, $zip, $zrequrl, $zstatus, $siteurl ) = initCount($line);
 
