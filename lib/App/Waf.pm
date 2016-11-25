@@ -53,14 +53,17 @@ our @EXPORT = qw(tail initCount);
    echo "*/5 * * * * perl $dir/banip.pl >> bianip.logs 2>&1 " >> /var/spool/cron/root
 
 =head1 SUBROUTINES/METHODS
+
 =head2 tail
 
 IN: $logfile,$count;
+
 OUT: return the the latest $count lines of the $logfile.  
 
 =head2 initCount
 
 IN: the content of need to cheack and count.
+
 OUT: all types count result.
 
 =cut
