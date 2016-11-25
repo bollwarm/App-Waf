@@ -28,11 +28,6 @@ our @ISA    = qw(Exporter);
 our @EXPORT = qw(tail initCount);
 
 =head1 SYNOPSIS
-
-Perhaps a little code snippet.
-
-=head1 EXPORT
-
 =head2 实例
 
   use App::Waf;
