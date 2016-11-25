@@ -5,6 +5,7 @@ use strict;
 use warnings;
 require Exporter;
 
+=encoding utf8
 =head1 NAME
 
 App::Waf - A sample  Web Application Firewall,
@@ -17,11 +18,11 @@ this infomations for ban whith iptables.
 
 =head1 VERSION
 
-Version 0.04
+Version 0.05
 
 =cut
 
-our $VERSION = '0.04';
+our $VERSION = '0.05';
 
 our @ISA    = qw(Exporter);
 our @EXPORT = qw(tail initCount);
@@ -57,6 +58,15 @@ Perhaps a little code snippet.
    echo "*/5 * * * * perl $dir/banip.pl >> bianip.logs 2>&1 " >> /var/spool/cron/root
 
 =head1 SUBROUTINES/METHODS
+=head2 tail
+
+IN: $logfile,$count;
+OUT: return the the latest $count lines of the $logfile.  
+
+=head2 initCount
+
+IN: the content of need to cheack and count.
+OUT: all types count result.
 
 =cut
 

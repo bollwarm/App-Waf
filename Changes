@@ -1,21 +1,19 @@
 Revision history for App-Waf
 
 0.04    2016-11-18/18
+* pod doc fix.
 
+0.04    2016-11-18/18
 * bug fixes.
 
 0.03    2016-11-17/19
-
 * add iptables banip practice example. 
 * add nginx banip practice example.
 
-
 0.02    2016-11-16/19
-
 * add summery output for sort of type.
 * practice examples an example sub.
 
 0.01    2016-11-14/19
- 
 *First version, released on an unsuspecting world.
 
