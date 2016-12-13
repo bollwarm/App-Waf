@@ -1,6 +1,8 @@
 use App::Waf;
 
-my $filename = "/web/logs/access.log";
+my $filename =  "example.acess";
+# change with you practice log pash,such as : 
+#$filename =  "/var/logs/httpd/access.log";
 my $numlines = shift;
 
 my $line = tail( $filename, $numlines );

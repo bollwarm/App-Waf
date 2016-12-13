@@ -18,11 +18,11 @@ this infomations for ban whith iptables.
 
 =head1 VERSION
 
-Version 0.05
+Version 0.06
 
 =cut
 
-our $VERSION = '0.05';
+our $VERSION = '0.06';
 
 our @ISA    = qw(Exporter);
 our @EXPORT = qw(tail initCount);
@@ -54,13 +54,13 @@ our @EXPORT = qw(tail initCount);
 
 =head1 SUBROUTINES/METHODS
 
-=head2 tail
+=head2 tail()
 
 IN: $logfile,$count;
 
 OUT: return the the latest $count lines of the $logfile.  
 
-=head2 initCount
+=head2 initCount()
 
 IN: the content of need to cheack and count.
 
@@ -70,110 +70,123 @@ OUT: all types count result.
 
 use File::ReadBackwards;
 
-my $DEBUG=0;
+my $DEBUG = 0;
 
-my @validurl =(
-'rfd.php\?include_file',
-'\.\./',
-'select.+(from|limit)',
-'(?:(union(.*?)select))',
-'having|rongjitest',
-'sleep\((\s*)(\d*)(\s*)\)',
-'benchmark\((.*)\,(.*)\)',
-'base64_decode\(',
-'(?:from\W+information_schema\W)',
-'(?:(?:current_)user|database|schema|connection_id)\s*\(',
-'(?:etc\/\W*passwd)',
-'into(\s+)+(?:dump|out)file\s*',
-'group\s+by.+\(',
-'xwork.MethodAccessor',
+my @validurl = (
+    'rfd.php\?include_file',
+    '\.\./',
+    'select.+(from|limit)',
+    '(?:(union(.*?)select))',
+    'having|rongjitest',
+    'sleep\((\s*)(\d*)(\s*)\)',
+    'benchmark\((.*)\,(.*)\)',
+    'base64_decode\(',
+    '(?:from\W+information_schema\W)',
+    '(?:(?:current_)user|database|schema|connection_id)\s*\(',
+    '(?:etc\/\W*passwd)',
+    'into(\s+)+(?:dump|out)file\s*',
+    'group\s+by.+\(',
+    'xwork.MethodAccessor',
 '(?:define|eval|file_get_contents|include|require|require_once|shell_exec|phpinfo|system|passthru|preg_\w+|execute|echo|print|print_r|var_dump|(fp)open|concat|alert|showmodaldialog)\(',
-'xwork\.MethodAccessor',
-'(gopher|doc|php|glob|file|phar|zlib|ftp|ldap|dict|ogg|data)\:\/',
-'java\.lang',
-'\$_(GET|post|cookie|files|session|env|phplib|GLOBALS|SERVER)\[',
-'\<(iframe|script|body|img|layer|div|meta|style|base|object|input)',
-'(onmouseover|onerror|onload)\=',
-'\.(bak|inc|old|mdb|sql|backup|java|class)$',
-'\.(svn|htaccess|bash_history)',
-'(vhost|bbs|host|wwwroot|www|site|root|hytop|flashfxp).*\.rar',
-'(phpmyadmin|jmx-console|jmxinvokerservlet)',
-'/xmlrpc.php',
+    'xwork\.MethodAccessor',
+    '(gopher|doc|php|glob|file|phar|zlib|ftp|ldap|dict|ogg|data)\:\/',
+    'java\.lang',
+    '\$_(GET|post|cookie|files|session|env|phplib|GLOBALS|SERVER)\[',
+    '\<(iframe|script|body|img|layer|div|meta|style|base|object|input)',
+    '(onmouseover|onerror|onload)\=',
+    '\.(bak|inc|old|mdb|sql|backup|java|class)$',
+    '\.(svn|htaccess|bash_history)',
+    '(vhost|bbs|host|wwwroot|www|site|root|hytop|flashfxp).*\.rar',
+    '(phpmyadmin|jmx-console|jmxinvokerservlet)',
+    '/xmlrpc.php',
 '/(attachments|upimg|images|css|uploadfiles|html|uploads|templets|static|template|data|inc|forumdata|upload|includes|cache|avatar)/(\w+).(php|jsp|asp)',
 
 );
 
 sub tail {
 
-my ($filename,$linenum)=@_;
-print "DEBUG :: tail() :: IN : $filename,$linenum \n" if $DEBUG;
-my $bw = File::ReadBackwards->new($filename)
-  or die "can't read $filename $!";
+    my ( $filename, $linenum ) = @_;
+    print "DEBUG :: tail() :: IN : $filename,$linenum \n" if $DEBUG;
+    my $bw = File::ReadBackwards->new($filename)
+      or die "can't read $filename $!";
+    $linenum=1000 unless $linenum;
+    my $count = 0;
+    my @lines;
 
-my $count = 0;
-my @lines;
+    while ( defined( my $line = $bw->readline ) ) {
+        push @lines, $line;
+        $count++;
+        if ( $count == $linenum ) { last }
+    }
 
-while ( defined( my $line = $bw->readline ) ) {
-    push @lines, $line;
-    $count++;
-    if ( $count == $linenum ) { last }
-}
-
-@lines = reverse @lines;
-return \@lines;
+    @lines = reverse @lines;
+    return \@lines;
 }
 
 sub initCount {
 
-my $line=shift;
-my @re=@validurl;
-my $kcount=shift;
-my ($zcount,$zip,$zrequrl,$zstatus,$siteurl);
-my $rawlog;
+    my $line   = shift;
+    my @re     = @validurl;
+    my $kcount = shift;
+    my ( $zcount, $zip, $zrequrl, $zstatus, $siteurl );
+    my $rawlog;
 
-for (@re) {
-    my $result = scarlog1( $_,$line);
-    my ( $mycount, $mylog ) = count($result);
-    my $key = $_;
-       $rawlog.=$mylog->{$key} if $mylog->{$key};
-        
-        $zcount+= $mycount->{$key}->[0] if $mycount->{$key}->[0];
-        print "DEBUG\:: initCount()\::OUT  $key $mycount->{$key}->[0]   $zcount \n" if $DEBUG;
-        $zip->{$_}+=$mycount->{$key}->[1]->{$_}  for ( keys %{ $mycount->{$key}->[1] } );
-        $zrequrl->{$_}+=$mycount->{$key}->[2]->{$_}  for (keys %{ $mycount->{$key}->[2] } );
+    for (@re) {
+        my $result = scarlog1( $_, $line );
+        my ( $mycount, $mylog ) = count($result);
+        my $key = $_;
+        $rawlog .= $mylog->{$key} if $mylog->{$key};
+
+        $zcount += $mycount->{$key}->[0] if $mycount->{$key}->[0];
+        print
+          "DEBUG\:: initCount()\::OUT  $key $mycount->{$key}->[0]   $zcount \n"
+          if $DEBUG;
+        $zip->{$_} += $mycount->{$key}->[1]->{$_}
+          for ( keys %{ $mycount->{$key}->[1] } );
+        $zrequrl->{$_} += $mycount->{$key}->[2]->{$_}
+          for ( keys %{ $mycount->{$key}->[2] } );
+
         if ($DEBUG) {
-        print "DEBUG\:: initCount()\::OUT  $key $zrequrl->{$_}  $_\=> $mycount->{$key}->[2]->{$_} \n" for (keys %{ $mycount->{$key}->[2] } ) ;}
-        $zstatus->{$_}+=$mycount->{$key}->[3]->{$_}   for (keys %{ $mycount->{$key}->[3] } );
-        $siteurl->{$_}+=$mycount->{$key}->[4]->{$_}  for (keys %{ $mycount->{$key}->[4] } );
+            print
+"DEBUG\:: initCount()\::OUT  $key $zrequrl->{$_}  $_\=> $mycount->{$key}->[2]->{$_} \n"
+              for ( keys %{ $mycount->{$key}->[2] } );
+        }
+        $zstatus->{$_} += $mycount->{$key}->[3]->{$_}
+          for ( keys %{ $mycount->{$key}->[3] } );
+        $siteurl->{$_} += $mycount->{$key}->[4]->{$_}
+          for ( keys %{ $mycount->{$key}->[4] } );
 
     }
- if ($DEBUG) {
-print  "DEBUG\:: initCount()\::OUT\::\$zrequrl  $_\=>$zrequrl->{$_}\n"  for(keys %{$zrequrl})  ;
-  }
-return ($rawlog,$zcount,$zip,$zrequrl,$zstatus,$siteurl);
+    if ($DEBUG) {
+        print "DEBUG\:: initCount()\::OUT\::\$zrequrl  $_\=>$zrequrl->{$_}\n"
+          for ( keys %{$zrequrl} );
+    }
+    return ( $rawlog, $zcount, $zip, $zrequrl, $zstatus, $siteurl );
 }
 
 sub count {
 
     my $result = shift;
 
-    my ($mcount, %rawlog);
+    my ( $mcount, %rawlog );
     my $count = 0;
     for ( keys %{$result} ) {
-        my (%ip, %requrl, %status, %siteurl);
+        my ( %ip, %requrl, %status, %siteurl );
 
         next if $result->{$_} eq "";
         $rawlog{$_} .= $result->{$_};
         my @seclogs = split /\n/ms, $result->{$_};
         for (@seclogs) {
-           $count++;
+            $count++;
             print "DEBUG\:: count()\::IN $_\n" if $DEBUG;
             my ( $ip, $requrl, $status, $siteurl ) = (split)[ 0, 6, 8, 10 ];
-            $ip{$ip}++ if $ip;
-            $requrl{$requrl}++ if $requrl;
-            $status{$status}++ if $status;
+            $ip{$ip}++           if $ip;
+            $requrl{$requrl}++   if $requrl;
+            $status{$status}++   if $status;
             $siteurl{$siteurl}++ if $siteurl;
-           print "DEBUG\:: count()\::OUT $ip\=>$ip{$ip} $requrl\=>$requrl{$requrl} $status\=>$status{$status} $siteurl\=>$siteurl{$siteurl} \n" if $DEBUG;
+            print
+"DEBUG\:: count()\::OUT $ip\=>$ip{$ip} $requrl\=>$requrl{$requrl} $status\=>$status{$status} $siteurl\=>$siteurl{$siteurl} \n"
+              if $DEBUG;
         }
 
         $mcount->{$_} = [ $count, \%ip, \%requrl, \%status, \%siteurl ];
@@ -182,7 +195,6 @@ sub count {
 
     return $mcount, \%rawlog;
 }
-
 
 sub scarlog1 {
 
@@ -202,6 +214,7 @@ sub scarlog1 {
     #print "DEBUG scarlog1 :: OUT :: $_: $result{$_}\n" for(keys %result);
     return \%result;
 }
+
 =head1 AUTHOR
 
 ORANGE, C<< <bollwarm at ijz.me> >>
