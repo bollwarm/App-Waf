@@ -26,7 +26,6 @@ my $ngixPidfile = $nginx_home . '/logs/nginx.pid';
 
 my $line = tail( $filename, $numlines );
 
-
 ( $log, $zcount, $zip, $zrequrl, $zstatus, $siteurl ) = initCount($line);
 
 for ( sort { $zip->{$b} <=> $zip->{$a} } keys %{$zip} ) {
@@ -36,6 +35,7 @@ for ( sort { $zip->{$b} <=> $zip->{$a} } keys %{$zip} ) {
     iptabBan( $_, $ngixBanfile, $ngixPidfile ) if $zip->{$_} > $threshold;
 
 }
+
 sub nginxBan {
 
     my $btime = localtime( time() );
@@ -53,9 +53,9 @@ sub nginxBan {
     unless ($bid) {
         print "$btime,banip $ip\n";
         print $nFD "deny $ip\;\n";
-        $pid=`cat $pid`;
+        $pid = `cat $pid`;
         chomp $pid;
-         `/usr/bin/kill -HUP $pid`;
+        `/usr/bin/kill -HUP $pid`;
     }
 
     close $nFD;
@@ -69,22 +69,23 @@ sub iptabBan {
 # 必须root用户才可以操作iptables，当然也必须有iptables服务跑动着
 
     my $IP = shift;
-    
-    my $ips = `iptables-save`;
-    my @ipsline=split /\n/sm,$ips;
-    my $dist=0;
-    for(@ipsline){
-        
-      $dist=1 if (/$IP/ and /INPUT/ and /DROP/);
 
-     }
+    my $ips     = `iptables-save`;
+    my @ipsline = split /\n/sm, $ips;
+    my $dist    = 0;
+    for (@ipsline) {
+
+        $dist = 1 if ( /$IP/ and /INPUT/ and /DROP/ );
+
+    }
     unless ($dist) {
         `iptables -I INPUT -s $IP -j DROP`;
         my $btime = localtime( time() );
         print "$btime :band $IP \n";
-    } else {
-   
-     print "band alread!\n";
+    }
+    else {
+
+        print "band alread!\n";
 
     }
 
