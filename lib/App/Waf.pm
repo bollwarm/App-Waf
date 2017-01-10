@@ -206,8 +206,6 @@ sub scarlog1 {
     $code .= 'if (m#';
     $code .= qr($patter);
     $code .= '#) {$result{' . q($patter) . '}.=$_}}';
-
-    #print $patter, ":\n";
     eval $code;
     die "Error ---: $@\n Code:\n$code\n" if ($@);
 
