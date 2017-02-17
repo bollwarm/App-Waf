@@ -8,7 +8,7 @@ my $numlines = shift;
 
 my $line = tail( $filename, $numlines );
 
-( $log, $zcount, $zip, $zrequrl, $zstatus, $siteurl ) = initCount($line);
+my ( $log, $zcount, $zip, $zrequrl, $zstatus, $siteurl ) = initCount($line);
 
 print "==============Attack Summary ==================\n";
 print "\nThe total attack count: $zcount \n";

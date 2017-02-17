@@ -10,7 +10,7 @@
     my $filename = "example.acess";#日志文件
     my $numlines  = 50000; #要处理的行数,从后读。
     my $line=tail($filename,$$numlines);
-     ($log,$zcount,$zip,$zrequrl,$zstatus,$siteurl)=initCount($line);
+    my ($log,$zcount,$zip,$zrequrl,$zstatus,$siteurl)=initCount($line);
     print "==============Attack Summary ==================\n";
     print "\nThe total attack count: $zcount \n";
     print "\nThe count from source IP:  \n\n";
