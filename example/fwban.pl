@@ -36,32 +36,6 @@ for ( sort { $zip->{$b} <=> $zip->{$a} } keys %{$zip} ) {
 
 }
 
-sub nginxBan {
-
-    my $btime = localtime( time() );
-    my ( $ip, $conf, $pid ) = @_;
-    my $bid = 0;
-    open my $nFD, "<", $conf or die("Can not open the file!$!\n");
-    while (<$nFD>) {
-        print "DEBUG ::nginxBan :: $conf IN $_" if $DEBUG;
-        $bid = 1 if /$ip/;
-    }
-    close $nFD;
-
-    open my $nFD, ">>", $conf or die("Can not open 1 the file!$!\n");
-
-    unless ($bid) {
-        print "$btime,banip $ip\n";
-        print $nFD "deny $ip\;\n";
-        $pid = `cat $pid`;
-        chomp $pid;
-        `/usr/bin/kill -HUP $pid`;
-    }
-
-    close $nFD;
-
-    #print  "/bin/kill -HUP $nginx_home/logs/nginx.pid \n";
-}
 
 sub iptabBan {
 

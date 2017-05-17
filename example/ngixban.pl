@@ -34,7 +34,6 @@ for ( sort { $zip->{$b} <=> $zip->{$a} } keys %{$zip} ) {
 
     nginxBan( $_, $ngixBanfile, $ngixPidfile ) if $zip->{$_} > $threshold;
 
-    #iptabBan( $_, $ngixBanfile, $ngixPidfile ) if $zip->{$_} > $threshold;
 
 }
 
@@ -61,34 +60,5 @@ sub nginxBan {
     }
 
     close $nFD;
-
-    #print  "/bin/kill -HUP $nginx_home/logs/nginx.pid \n";
-}
-
-sub iptabBan {
-
-# must be root user;
-# 必须root用户才可以操作iptables，当然也必须有iptables服务跑动着
-
-    my $IP = shift;
-
-    my $ips     = `iptables-save`;
-    my @ipsline = split /\n/sm, $ips;
-    my $dist    = 0;
-    for (@ipsline) {
-
-        $dist = 1 if ( /$IP/ and /INPUT/ and /DROP/ );
-
-    }
-    unless ($dist) {
-        `iptables -I INPUT -s $IP -j DROP`;
-        my $btime = localtime( time() );
-        print "$btime :band $IP \n";
-    }
-    else {
-
-        print "band alread!\n";
-
-    }
 
 }
