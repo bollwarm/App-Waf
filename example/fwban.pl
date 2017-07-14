@@ -44,7 +44,7 @@ sub iptabBan {
 
     my $IP = shift;
 
-    my $ips     = `iptables-save`;
+    my $ips     = `/sbin/iptables-save`;
     my @ipsline = split /\n/sm, $ips;
     my $dist    = 0;
     for (@ipsline) {
@@ -53,7 +53,7 @@ sub iptabBan {
 
     }
     unless ($dist) {
-        `iptables -I INPUT -s $IP -j DROP`;
+        `/sbin/iptables -I INPUT -s $IP -j DROP`;
         my $btime = localtime( time() );
         print "$btime :band $IP \n";
     }
