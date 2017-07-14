@@ -26,9 +26,28 @@
    
 加入crontab 每5分钟执行一次。
 
-    echo "*/5 * * * * perl $dir/banip.pl >> bianip.logs 2>&1 " >> /var/spool/cron/root
+    echo "*/5 * * * * perl $dir/example/ngixban.pl >> bianip.logs 2>&1 " >> /var/spool/cron/root
+    echo "*/5 * * * * perl $dir/example/synban.pl >> bianip.logs 2>&1 " >> /var/spool/cron/root
 
 ## 结果展示
+
++++++++++++++++++++++++++ban for SYN attact+++++++++++++++++++++
+
+    Fri Jul 14 15:46:02 2017 Ban The IP ：173.173.199.246
+    Fri Jul 14 15:46:02 2017 :band 173.173.199.246
+    Fri Jul 14 15:46:02 2017 73.6.1.122 SYN攻击次数: 6
+    Fri Jul 14 15:46:02 2017 103.56.116.150 SYN攻击次数: 2
+    Fri Jul 14 15:47:01 2017 173.173.199.246 SYN攻击次数: 19
+    Fri Jul 14 15:47:01 2017 Ban The IP ：173.173.199.246
+    Fri Jul 14 15:47:01 2017 baned 173.173.199.246
+    Fri Jul 14 15:47:01 2017 103.56.116.150 SYN攻击次数: 1
+    Fri Jul 14 15:48:01 2017 173.173.199.246 SYN攻击次数: 19
+    Fri Jul 14 15:48:01 2017 Ban The IP ：173.173.199.246
+    Fri Jul 14 15:48:01 2017 baned 173.173.199.246
+    Fri Jul 14 15:48:01 2017 103.56.116.150 SYN攻击次数: 1
+    Fri Jul 14 15:49:01 2017 173.173.199.246 SYN攻击次数: 17
+    Fri Jul 14 15:49:01 2017 Ban The IP ：173.173.199.246
+    Fri Jul 14 15:49:01 2017 band alread!
 
 ==============Attack Summary ==================
 

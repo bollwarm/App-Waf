@@ -18,14 +18,14 @@ this infomations for ban whith iptables.
 
 =head1 VERSION
 
-Version 0.06
+Version 0.07
 
 =cut
 
-our $VERSION = '0.06';
+our $VERSION = '0.07';
 
 our @ISA    = qw(Exporter);
-our @EXPORT = qw(tail initCount);
+our @EXPORT = qw(tail initCount iptabBan nginxBan);
 
 =head1 SYNOPSIS
 =head2 实例
@@ -211,6 +211,61 @@ sub scarlog1 {
 
     #print "DEBUG scarlog1 :: OUT :: $_: $result{$_}\n" for(keys %result);
     return \%result;
+}
+
+sub iptabBan {
+
+# must be root user;
+# 必须root用户才可以操作iptables，当然也必须有iptables服务跑动着
+
+    my $IP = shift;
+
+    my $ips     = `/sbin/iptables-save`;
+    my @ipsline = split /\n/sm, $ips;
+    my $dist    = 0;
+    for (@ipsline) {
+
+        $dist = 1 if ( /$IP/ and /INPUT/ and /DROP/ );
+
+    }
+    unless ($dist) {
+        `/sbin/iptables -I INPUT -s $IP -j DROP`;
+        my $btime = localtime( time() );
+        print "$btime :band $IP \n";
+    }
+    else {
+
+        print "band alread!\n";
+
+    }
+
+}
+
+
+sub nginxBan {
+
+    my $btime = localtime( time() );
+    my ( $ip, $conf, $pid ) = @_;
+    my $bid = 0;
+    open my $nFD, "<", $conf or die("Can not open the file!$!\n");
+    while (<$nFD>) {
+        print "DEBUG ::nginxBan :: $conf IN $_" if $DEBUG;
+        $bid = 1 if /$ip/;
+    }
+    close $nFD;
+
+    open my $nFD, ">>", $conf or die("Can not open 1 the file!$!\n");
+
+    unless ($bid) {
+        print "$btime,banip $ip\n";
+        print $nFD "deny $ip\;\n";
+        $pid = `cat $pid`;
+        chomp $pid;
+        `/usr/bin/kill -HUP $pid`;
+    }
+
+    close $nFD;
+
 }
 
 =head1 AUTHOR

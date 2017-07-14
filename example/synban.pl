@@ -5,34 +5,38 @@ use App::Waf;
 # 设置日志文件和需要解析的文件大小，一般是web日志，$threshold为封禁的阈值
 # 可以根据实际情况调节大小
 
-my $filename  = "/web/logs/access.log";
-my $numlines  = 10000;
-my $threshold = 200;
-
 =pod
 ## 结合nginx 和 iptables 进行实时banip的实例（example/banip.pl）
 
 ## 加入crontab 每5分钟执行一次。
 
 =code<`echo "*/5 * * * * perl $dir/banip.pl >> bianip.logs 2>&1 " >> /var/spool/cron/root`>
-## 以下设置nginx格式，包括nginx封禁的文件和重启nginx
-## 需要的pid格式。
 
 =cut
 
-my $nginx_home  = "/usr/local/nginx";
-my $ngixBanfile = $nginx_home . '/conf/conf.d/blockip.conf';
-my $ngixPidfile = $nginx_home . '/logs/nginx.pid';
+my $cmd=q(/usr/sbin/ss -a|grep SYN-RECV|perl -lane 'print $F[-1]'|perl -pe 's/:.*$//');
+my @sync_ps_count=`$cmd`;
+my %ipcount;
+my $threshold=8;
+my $btime=localtime time;
+for(@sync_ps_count){
 
-my $line = tail( $filename, $numlines );
+chomp;
+$ipcount{$_}++;
+}
 
-( $log, $zcount, $zip, $zrequrl, $zstatus, $siteurl ) = initCount($line);
+for(sort {$ipcount{$b}<=>$ipcount{$a}} keys %ipcount) {
 
-for ( sort { $zip->{$b} <=> $zip->{$a} } keys %{$zip} ) {
+print "$btime $_ SYN攻击次数: $ipcount{$_} \n";
 
-    print "$_ : $zip->{$_} \n" if $zip->{$_} > $threshold;
+# Count are more than shreshold, Then Ban it through iptables;
 
-    iptabBan( $_, $ngixBanfile, $ngixPidfile ) if $zip->{$_} > $threshold;
+if ($ipcount{$_} > $threshold) {
+
+  print  "$btime Ban The IP ：$_ \n";
+
+  iptabBan($_);
+}
 
 }
 

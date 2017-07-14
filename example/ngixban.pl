@@ -37,6 +37,7 @@ for ( sort { $zip->{$b} <=> $zip->{$a} } keys %{$zip} ) {
 
 }
 
+=pod
 sub nginxBan {
 
     my $btime = localtime( time() );
@@ -62,3 +63,4 @@ sub nginxBan {
     close $nFD;
 
 }
+=cut

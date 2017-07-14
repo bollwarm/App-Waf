@@ -1,5 +1,10 @@
 Revision history for App-Waf
 
+0.07    2017-07-14/16
+
+*  fix iptables can't find bug
+*  add scane for SYN attack and ban for IPs
+
 0.06    2016-12-13/18
 *  add Parameter fault tolerance.
 
