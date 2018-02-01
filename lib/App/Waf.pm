@@ -254,7 +254,6 @@ sub nginxBan {
     }
     close $nFD;
 
-    open my $nFD, ">>", $conf or die("Can not open 1 the file!$!\n");
 
     unless ($bid) {
         print "$btime,banip $ip\n";
@@ -264,7 +263,6 @@ sub nginxBan {
         `/usr/bin/kill -HUP $pid`;
     }
 
-    close $nFD;
 
 }
 
