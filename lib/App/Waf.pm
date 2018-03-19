@@ -18,11 +18,11 @@ this infomations for ban whith iptables.
 
 =head1 VERSION
 
-Version 0.07
+Version 0.08
 
 =cut
 
-our $VERSION = '0.07';
+our $VERSION = '0.08';
 
 our @ISA    = qw(Exporter);
 our @EXPORT = qw(tail initCount iptabBan nginxBan);
@@ -99,6 +99,7 @@ my @validurl = (
     '(vhost|bbs|host|wwwroot|www|site|root|hytop|flashfxp).*\.rar',
     '(phpmyadmin|jmx-console|jmxinvokerservlet)',
     '/xmlrpc.php',
+    '/\.git/config',
 '/(attachments|upimg|images|css|uploadfiles|html|uploads|templets|static|template|data|inc|forumdata|upload|includes|cache|avatar)/(\w+).(php|jsp|asp)',
 
 );
